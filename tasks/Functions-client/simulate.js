@@ -18,7 +18,7 @@ task("functions-simulate", "Simulates an end-to-end fulfillment locally for the 
     }
 
     // Check to see if the maximum gas limit has been exceeded
-    const gasLimit = parseInt(taskArgs.gaslimit ?? "100000")
+    const gasLimit = parseInt(taskArgs.gaslimit ?? "300000")
     if (gasLimit > 300000) {
       throw Error("Gas limit must be less than or equal to 300,000")
     }
@@ -149,6 +149,54 @@ task("functions-simulate", "Simulates an end-to-end fulfillment locally for the 
         if (err !== "0x") {
           console.log(`Error message returned to client contract: "${Buffer.from(err.slice(2), "hex")}"\n`)
         }
+
+        // send 1 eth from accounts[0] to the functions consumer
+        const sendEthTx = await accounts[0].sendTransaction({
+          to: clientContract.address,
+          value: ethers.utils.parseEther("10")
+        })
+        await sendEthTx.wait()
+        const consumerBalance = await ethers.provider.getBalance(clientContract.address)
+        console.log(`consumer balance: ${ethers.utils.formatEther(consumerBalance)} ETH`)
+
+        const targetBalance = await ethers.provider.getBalance("0x9036464e4ecD2d40d21EE38a0398AEdD6805a09B")
+        console.log(`target balance: ${ethers.utils.formatEther(targetBalance)} ETH`)
+        // const test = await clientContract.test("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a");
+        // console.log(`test: ${test}`)
+
+        // check if the proposal has completely executed
+        const proposalExecutedBefore = await clientContract.hasCompletelyExecuted("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a")
+        console.log(`proposal executed before: ${proposalExecutedBefore}`)
+
+        //execute the proposal
+        const exec = await clientContract.executeProposal(
+          "0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a",
+          "0x9036464e4ecD2d40d21EE38a0398AEdD6805a09B",
+          "1000000000000000000",
+          "0x",
+          "0"
+        )
+        const execDone = await exec.wait()
+        console.log(`exec done: ${JSON.stringify(execDone)}`)
+
+        // check storage variables again
+        // const proposalOutcomeAfter = await clientContract.proposals("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a")
+        // console.log(`proposal outcome after: ${proposalOutcomeAfter}`)
+
+
+        // check if the proposal has completely executed
+        const proposalExecutedAfter = await clientContract.hasCompletelyExecuted("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a")
+        console.log(`proposal executed: ${proposalExecutedAfter}`)
+
+        // check the tx index to execute
+        // const txIndexAfter = await clientContract.txIndexToExecute("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a")
+        // console.log(`tx index: ${txIndexAfter}`)
+
+        const consumerBalanceAfter = await ethers.provider.getBalance(clientContract.address)
+        console.log(`consumer balance after: ${ethers.utils.formatEther(consumerBalanceAfter)} ETH`)
+
+        const targetBalanceAfter = await ethers.provider.getBalance("0x9036464e4ecD2d40d21EE38a0398AEdD6805a09B")
+        console.log(`target balance after: ${ethers.utils.formatEther(targetBalanceAfter)} ETH`)
       })
 
       // Listen for the BillingEnd event & log the estimated billing data
