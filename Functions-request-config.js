@@ -40,7 +40,7 @@ const requestConfig = {
   walletPrivateKey: process.env["PRIVATE_KEY"],
   // args (string only array) can be accessed within the source code with `args[index]` (ie: args[0]).
   // args: ["1", "bitcoin", "btc-bitcoin", "btc", "1000000", "450"],
-  args: ["0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a"],
+  args: ["0x6ebe48a886db66b86756a72b4acd6451fb85e5fc00c212309ae32713b8bbb0f6"],
   // expected type of the returned value
   expectedReturnType: ReturnType.uint256,
   // Redundant URLs which point to encrypted off-chain secrets

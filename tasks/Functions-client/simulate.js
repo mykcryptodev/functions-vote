@@ -64,6 +64,14 @@ task("functions-simulate", "Simulates an end-to-end fulfillment locally for the 
 
     // Make a request & simulate a fulfillment
     await new Promise(async (resolve) => {
+      console.log({
+        source: request.source,
+        secrets: request.secrets ?? [],
+        secretsLocation: validatedRequestConfig.secretsLocation,
+        args: request.args ?? [],
+        subscriptionId,
+        gasLimit,
+      })
       // Initiate the request from the client contract
       const clientContract = await clientFactory.attach(client.address)
       const requestTx = await clientContract.executeRequest(
@@ -123,6 +131,9 @@ task("functions-simulate", "Simulates an end-to-end fulfillment locally for the 
           }
         )
         await fulfillTx.wait(1)
+        // read the value from the contract
+        const txDataStored = await clientContract.getTxData("0x6ebe48a886db66b86756a72b4acd6451fb85e5fc00c212309ae32713b8bbb0f6", 0);
+        console.log({txDataStored});
       } catch (fulfillError) {
         // Catch & report any unexpected fulfillment errors
         console.log("\nUnexpected error encountered when calling fulfillRequest in client contract.")
@@ -161,18 +172,18 @@ task("functions-simulate", "Simulates an end-to-end fulfillment locally for the 
 
         const targetBalance = await ethers.provider.getBalance("0x9036464e4ecD2d40d21EE38a0398AEdD6805a09B")
         console.log(`target balance: ${ethers.utils.formatEther(targetBalance)} ETH`)
-        // const test = await clientContract.test("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a");
+        // const test = await clientContract.test("0x6ebe48a886db66b86756a72b4acd6451fb85e5fc00c212309ae32713b8bbb0f6");
         // console.log(`test: ${test}`)
 
         // check if the proposal has completely executed
-        const proposalExecutedBefore = await clientContract.hasCompletelyExecuted("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a")
+        const proposalExecutedBefore = await clientContract.hasCompletelyExecuted("0x6ebe48a886db66b86756a72b4acd6451fb85e5fc00c212309ae32713b8bbb0f6")
         console.log(`proposal executed before: ${proposalExecutedBefore}`)
 
         //execute the proposal
         const exec = await clientContract.executeProposal(
-          "0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a",
+          "0x6ebe48a886db66b86756a72b4acd6451fb85e5fc00c212309ae32713b8bbb0f6",
           "0x9036464e4ecD2d40d21EE38a0398AEdD6805a09B",
-          "1000000000000000000",
+          "10000000000000",
           "0x",
           "0"
         )
@@ -180,16 +191,16 @@ task("functions-simulate", "Simulates an end-to-end fulfillment locally for the 
         console.log(`exec done: ${JSON.stringify(execDone)}`)
 
         // check storage variables again
-        // const proposalOutcomeAfter = await clientContract.proposals("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a")
+        // const proposalOutcomeAfter = await clientContract.proposals("0x6ebe48a886db66b86756a72b4acd6451fb85e5fc00c212309ae32713b8bbb0f6")
         // console.log(`proposal outcome after: ${proposalOutcomeAfter}`)
 
 
         // check if the proposal has completely executed
-        const proposalExecutedAfter = await clientContract.hasCompletelyExecuted("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a")
+        const proposalExecutedAfter = await clientContract.hasCompletelyExecuted("0x6ebe48a886db66b86756a72b4acd6451fb85e5fc00c212309ae32713b8bbb0f6")
         console.log(`proposal executed: ${proposalExecutedAfter}`)
 
         // check the tx index to execute
-        // const txIndexAfter = await clientContract.txIndexToExecute("0x39a0fe38c6568432244e2d09ff20dbb1ddd771fc2d275da8ad9284b95251f37a")
+        // const txIndexAfter = await clientContract.txIndexToExecute("0x6ebe48a886db66b86756a72b4acd6451fb85e5fc00c212309ae32713b8bbb0f6")
         // console.log(`tx index: ${txIndexAfter}`)
 
         const consumerBalanceAfter = await ethers.provider.getBalance(clientContract.address)

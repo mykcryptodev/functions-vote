@@ -278,6 +278,11 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
     return executed[proposalId];
   }
 
+  function getTxData(string memory proposalId, uint256 txIndex) public view returns (bytes32[] memory) {
+    bytes32[] memory txData = proposals[proposalId];
+    return txData;
+  }
+
   /**
    * @notice Allows the Functions oracle address to be updated
    *
